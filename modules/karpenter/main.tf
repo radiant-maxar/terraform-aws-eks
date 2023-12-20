@@ -134,17 +134,17 @@ data "aws_iam_policy_document" "pod_identity" {
     condition {
       test     = "StringEquals"
       variable = "ec2:CreateAction"
-      values   = ["owned"]
+      values   = [
+        "RunInstances",
+        "CreateFleet",
+        "CreateLaunchTemplate",
+      ]
     }
 
     condition {
       test     = "StringLike"
       variable = "aws:RequestTag/karpenter.sh/nodepool"
-      values = [
-        "RunInstances",
-        "CreateFleet",
-        "CreateLaunchTemplate",
-      ]
+      values   = ["*"]
     }
   }
 
