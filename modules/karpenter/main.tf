@@ -241,7 +241,7 @@ data "aws_iam_policy_document" "pod_identity" {
 
   statement {
     sid       = "AllowPassingInstanceRole"
-    resources = [local.create_iam_role ? aws_iam_role.this[0].arn : var.iam_role_arn]
+    resources = aws_iam_role.pod_identity[*].arn
     actions   = ["iam:PassRole"]
 
     condition {
