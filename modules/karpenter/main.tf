@@ -230,7 +230,7 @@ data "aws_iam_policy_document" "pod_identity" {
 
   statement {
     sid       = "AllowInterruptionQueueActions"
-    resources = ["arn:aws:sqs:*:${local.account_id}:${var.cluster_name}"]
+    resources = aws_sqs_queue.this[*].arn
     actions = [
       "sqs:DeleteMessage",
       "sqs:GetQueueAttributes",
