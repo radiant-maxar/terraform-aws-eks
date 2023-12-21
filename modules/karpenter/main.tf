@@ -156,13 +156,13 @@ data "aws_iam_policy_document" "pod_identity" {
 
     condition {
       test     = "StringEquals"
-      variable = "aws:RequestTag/kubernetes.io/cluster/${var.cluster_name}"
+      variable = "aws:ResourceTag/kubernetes.io/cluster/${var.cluster_name}"
       values   = ["owned"]
     }
 
     condition {
       test     = "StringLike"
-      variable = "aws:RequestTag/karpenter.sh/nodepool"
+      variable = "aws:ResourceTag/karpenter.sh/nodepool"
       values   = ["*"]
     }
 
@@ -277,7 +277,7 @@ data "aws_iam_policy_document" "pod_identity" {
 
     condition {
       test     = "StringLike"
-      variable = "aws:ResourceTag/karpenter.k8s.aws/ec2nodeclass"
+      variable = "aws:RequestTag/karpenter.k8s.aws/ec2nodeclass"
       values   = ["*"]
     }
   }
