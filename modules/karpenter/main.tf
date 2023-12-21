@@ -135,7 +135,7 @@ data "aws_iam_policy_document" "pod_identity" {
     condition {
       test     = "StringEquals"
       variable = "ec2:CreateAction"
-      values   = [
+      values = [
         "RunInstances",
         "CreateFleet",
         "CreateLaunchTemplate",
@@ -190,13 +190,13 @@ data "aws_iam_policy_document" "pod_identity" {
 
     condition {
       test     = "StringEquals"
-      variable = "aws:RequestTag/kubernetes.io/cluster/${var.cluster_name}"
+      variable = "aws:ResourceTag/kubernetes.io/cluster/${var.cluster_name}"
       values   = ["owned"]
     }
 
     condition {
       test     = "StringLike"
-      variable = "aws:RequestTag/karpenter.sh/nodepool"
+      variable = "aws:ResourceTag/karpenter.sh/nodepool"
       values   = ["*"]
     }
   }
@@ -248,7 +248,7 @@ data "aws_iam_policy_document" "pod_identity" {
 
   statement {
     sid       = "AllowPassingInstanceRole"
-    resources = aws_iam_role.pod_identity[*].arn
+    resources = aws_iam_role.this[*].arn
     actions   = ["iam:PassRole"]
 
     condition {
@@ -566,7 +566,7 @@ resource "aws_iam_role_policy_attachment" "additional" {
 # Node IAM Instance Profile
 # This is used by the nodes launched by Karpenter
 # Starting with Karpenter 0.32 this is no longer required as Karpenter will
-# create the Instance Profile 
+# create the Instance Profile
 ################################################################################
 
 locals {
