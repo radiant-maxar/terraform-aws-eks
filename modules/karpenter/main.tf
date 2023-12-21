@@ -1,10 +1,12 @@
 data "aws_partition" "current" {}
+data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 locals {
   account_id = data.aws_caller_identity.current.account_id
   partition  = data.aws_partition.current.partition
   dns_suffix = data.aws_partition.current.dns_suffix
+  region     = data.aws_region.current.name
 
   tags = merge(var.tags, { terraform-aws-modules = "eks" })
 }
@@ -71,33 +73,33 @@ data "aws_iam_policy_document" "pod_identity" {
   statement {
     sid = "AllowScopedEC2InstanceActions"
     resources = [
-      "arn:${local.partition}:ec2:*::image/*",
-      "arn:${local.partition}:ec2:*::snapshot/*",
-      "arn:${local.partition}:ec2:*:*:spot-instances-request/*",
-      "arn:${local.partition}:ec2:*:*:security-group/*",
-      "arn:${local.partition}:ec2:*:*:subnet/*",
-      "arn:${local.partition}:ec2:*:*:launch-template/*",
+      "arn:${local.partition}:ec2:${local.region}::image/*",
+      "arn:${local.partition}:ec2:${local.region}::snapshot/*",
+      "arn:${local.partition}:ec2:${local.region}:*:spot-instances-request/*",
+      "arn:${local.partition}:ec2:${local.region}:*:security-group/*",
+      "arn:${local.partition}:ec2:${local.region}:*:subnet/*",
+      "arn:${local.partition}:ec2:${local.region}:*:launch-template/*",
     ]
 
     actions = [
       "ec2:RunInstances",
-      "ec2:CreateFleet"
+      "ec2:CreateFleet",
     ]
   }
 
   statement {
     sid = "AllowScopedEC2InstanceActionsWithTags"
     resources = [
-      "arn:${local.partition}:ec2:*:*:fleet/*",
-      "arn:${local.partition}:ec2:*:*:instance/*",
-      "arn:${local.partition}:ec2:*:*:volume/*",
-      "arn:${local.partition}:ec2:*:*:network-interface/*",
-      "arn:${local.partition}:ec2:*:*:launch-template/*",
+      "arn:${local.partition}:ec2:${local.region}:*:fleet/*",
+      "arn:${local.partition}:ec2:${local.region}:*:instance/*",
+      "arn:${local.partition}:ec2:${local.region}:*:volume/*",
+      "arn:${local.partition}:ec2:${local.region}:*:network-interface/*",
+      "arn:${local.partition}:ec2:${local.region}:*:launch-template/*",
     ]
     actions = [
       "ec2:RunInstances",
       "ec2:CreateFleet",
-      "ec2:CreateLaunchTemplate"
+      "ec2:CreateLaunchTemplate",
     ]
 
     condition {
@@ -116,14 +118,13 @@ data "aws_iam_policy_document" "pod_identity" {
   statement {
     sid = "AllowScopedResourceCreationTagging"
     resources = [
-      "arn:${local.partition}:ec2:*:*:fleet/*",
-      "arn:${local.partition}:ec2:*:*:instance/*",
-      "arn:${local.partition}:ec2:*:*:volume/*",
-      "arn:${local.partition}:ec2:*:*:network-interface/*",
-      "arn:${local.partition}:ec2:*:*:launch-template/*",
+      "arn:${local.partition}:ec2:${local.region}:*:fleet/*",
+      "arn:${local.partition}:ec2:${local.region}:*:instance/*",
+      "arn:${local.partition}:ec2:${local.region}:*:volume/*",
+      "arn:${local.partition}:ec2:${local.region}:*:network-interface/*",
+      "arn:${local.partition}:ec2:${local.region}:*:launch-template/*",
     ]
     actions = ["ec2:CreateTags"]
-
 
     condition {
       test     = "StringEquals"
@@ -150,7 +151,7 @@ data "aws_iam_policy_document" "pod_identity" {
 
   statement {
     sid       = "AllowScopedResourceTagging"
-    resources = ["arn:${local.partition}:ec2:*:*:instance/*"]
+    resources = ["arn:${local.partition}:ec2:${local.region}:*:instance/*"]
     actions   = ["ec2:CreateTags"]
 
     condition {
@@ -178,8 +179,8 @@ data "aws_iam_policy_document" "pod_identity" {
   statement {
     sid = "AllowScopedDeletion"
     resources = [
-      "arn:${local.partition}:ec2:*:*:instance/*",
-      "arn:${local.partition}:ec2:*:*:launch-template/*"
+      "arn:${local.partition}:ec2:${local.region}:*:instance/*",
+      "arn:${local.partition}:ec2:${local.region}:*:launch-template/*"
     ]
 
     actions = [
@@ -201,7 +202,7 @@ data "aws_iam_policy_document" "pod_identity" {
   }
 
   statement {
-    sid       = "AllowDescribeActions"
+    sid       = "AllowRegionalReadActions"
     resources = ["*"]
     actions = [
       "ec2:DescribeAvailabilityZones",
@@ -214,6 +215,12 @@ data "aws_iam_policy_document" "pod_identity" {
       "ec2:DescribeSpotPriceHistory",
       "ec2:DescribeSubnets"
     ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:RequestedRegion"
+      values   = [local.region]
+    }
   }
 
   statement {
@@ -261,6 +268,18 @@ data "aws_iam_policy_document" "pod_identity" {
       variable = "aws:RequestTag/kubernetes.io/cluster/${var.cluster_name}"
       values   = ["owned"]
     }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:RequestTag/topology.kubernetes.io/region"
+      values   = [local.region]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "aws:ResourceTag/karpenter.k8s.aws/ec2nodeclass"
+      values   = ["*"]
+    }
   }
 
   statement {
@@ -276,8 +295,20 @@ data "aws_iam_policy_document" "pod_identity" {
 
     condition {
       test     = "StringEquals"
+      variable = "aws:ResourceTag/topology.kubernetes.io/region"
+      values   = [local.region]
+    }
+
+    condition {
+      test     = "StringEquals"
       variable = "aws:RequestTag/kubernetes.io/cluster/${var.cluster_name}"
       values   = ["owned"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:RequestTag/topology.kubernetes.io/region"
+      values   = [local.region]
     }
 
     condition {
@@ -309,6 +340,12 @@ data "aws_iam_policy_document" "pod_identity" {
     }
 
     condition {
+      test     = "StringEquals"
+      variable = "aws:ResourceTag/topology.kubernetes.io/region"
+      values   = [local.region]
+    }
+
+    condition {
       test     = "StringLike"
       variable = "aws:ResourceTag/karpenter.k8s.aws/ec2nodeclass"
       values   = ["*"]
@@ -323,7 +360,7 @@ data "aws_iam_policy_document" "pod_identity" {
 
   statement {
     sid       = "AllowAPIServerEndpointDiscovery"
-    resources = ["arn:${local.partition}:eks:*:${local.account_id}:cluster/${var.cluster_name}"]
+    resources = ["arn:${local.partition}:eks:${local.region}:${local.account_id}:cluster/${var.cluster_name}"]
     actions   = ["eks:DescribeCluster"]
   }
 }
