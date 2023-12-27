@@ -123,6 +123,7 @@ data "aws_iam_policy_document" "pod_identity" {
       "arn:${local.partition}:ec2:${local.region}:*:volume/*",
       "arn:${local.partition}:ec2:${local.region}:*:network-interface/*",
       "arn:${local.partition}:ec2:${local.region}:*:launch-template/*",
+      "arn:${local.partition}:ec2:${local.region}:*:spot-instances-request/*",
     ]
     actions = ["ec2:CreateTags"]
 
