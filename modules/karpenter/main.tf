@@ -75,7 +75,6 @@ data "aws_iam_policy_document" "pod_identity" {
     resources = [
       "arn:${local.partition}:ec2:${local.region}::image/*",
       "arn:${local.partition}:ec2:${local.region}::snapshot/*",
-      "arn:${local.partition}:ec2:${local.region}:*:spot-instances-request/*",
       "arn:${local.partition}:ec2:${local.region}:*:security-group/*",
       "arn:${local.partition}:ec2:${local.region}:*:subnet/*",
       "arn:${local.partition}:ec2:${local.region}:*:launch-template/*",
@@ -95,6 +94,7 @@ data "aws_iam_policy_document" "pod_identity" {
       "arn:${local.partition}:ec2:${local.region}:*:volume/*",
       "arn:${local.partition}:ec2:${local.region}:*:network-interface/*",
       "arn:${local.partition}:ec2:${local.region}:*:launch-template/*",
+      "arn:${local.partition}:ec2:${local.region}:*:spot-instances-request/*",
     ]
     actions = [
       "ec2:RunInstances",
