@@ -75,9 +75,9 @@ data "aws_iam_policy_document" "pod_identity" {
     resources = [
       "arn:${local.partition}:ec2:${local.region}::image/*",
       "arn:${local.partition}:ec2:${local.region}::snapshot/*",
-      "arn:${local.partition}:ec2:${local.region}:*:security-group/*",
-      "arn:${local.partition}:ec2:${local.region}:*:subnet/*",
-      "arn:${local.partition}:ec2:${local.region}:*:launch-template/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:security-group/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:subnet/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:launch-template/*",
     ]
 
     actions = [
@@ -89,12 +89,12 @@ data "aws_iam_policy_document" "pod_identity" {
   statement {
     sid = "AllowScopedEC2InstanceActionsWithTags"
     resources = [
-      "arn:${local.partition}:ec2:${local.region}:*:fleet/*",
-      "arn:${local.partition}:ec2:${local.region}:*:instance/*",
-      "arn:${local.partition}:ec2:${local.region}:*:volume/*",
-      "arn:${local.partition}:ec2:${local.region}:*:network-interface/*",
-      "arn:${local.partition}:ec2:${local.region}:*:launch-template/*",
-      "arn:${local.partition}:ec2:${local.region}:*:spot-instances-request/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:fleet/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:instance/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:volume/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:network-interface/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:launch-template/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:spot-instances-request/*",
     ]
     actions = [
       "ec2:RunInstances",
@@ -118,12 +118,12 @@ data "aws_iam_policy_document" "pod_identity" {
   statement {
     sid = "AllowScopedResourceCreationTagging"
     resources = [
-      "arn:${local.partition}:ec2:${local.region}:*:fleet/*",
-      "arn:${local.partition}:ec2:${local.region}:*:instance/*",
-      "arn:${local.partition}:ec2:${local.region}:*:volume/*",
-      "arn:${local.partition}:ec2:${local.region}:*:network-interface/*",
-      "arn:${local.partition}:ec2:${local.region}:*:launch-template/*",
-      "arn:${local.partition}:ec2:${local.region}:*:spot-instances-request/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:fleet/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:instance/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:volume/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:network-interface/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:launch-template/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:spot-instances-request/*",
     ]
     actions = ["ec2:CreateTags"]
 
@@ -152,7 +152,7 @@ data "aws_iam_policy_document" "pod_identity" {
 
   statement {
     sid       = "AllowScopedResourceTagging"
-    resources = ["arn:${local.partition}:ec2:${local.region}:*:instance/*"]
+    resources = ["arn:${local.partition}:ec2:${local.region}:${local.account_id}:instance/*"]
     actions   = ["ec2:CreateTags"]
 
     condition {
@@ -180,8 +180,8 @@ data "aws_iam_policy_document" "pod_identity" {
   statement {
     sid = "AllowScopedDeletion"
     resources = [
-      "arn:${local.partition}:ec2:${local.region}:*:instance/*",
-      "arn:${local.partition}:ec2:${local.region}:*:launch-template/*"
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:instance/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:launch-template/*"
     ]
 
     actions = [
